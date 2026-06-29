@@ -1,5 +1,6 @@
 package com.example.ubersockerservice.controllers;
 
+import com.example.ubersockerservice.apis.BookingServiceApi;
 import com.example.ubersockerservice.dtos.RideRequestDto;
 import com.example.ubersockerservice.dtos.RideResponseDto;
 import com.example.ubersockerservice.dtos.UpdateBookingRequestDto;
@@ -20,10 +21,12 @@ public class DriverRequestController {
     private final SimpMessagingTemplate simpMessagingTemplate;
     private final RestTemplate restTemplate;
     private final KafkaProducerService kafkaProducerService;
+    private final BookingServiceApi bookingServiceApi;
 
-    public DriverRequestController(SimpMessagingTemplate simpMessagingTemplate, KafkaProducerService kafkaProducerService) {
+    public DriverRequestController(SimpMessagingTemplate simpMessagingTemplate, KafkaProducerService kafkaProducerService, BookingServiceApi bookingServiceApi) {
         this.simpMessagingTemplate = simpMessagingTemplate;
         this.kafkaProducerService = kafkaProducerService;
+        this.bookingServiceApi = bookingServiceApi;
         this.restTemplate = new RestTemplate();
     }
     @GetMapping
@@ -47,7 +50,10 @@ public class DriverRequestController {
                 .driverId(Long.parseLong(userId))
                 .bookingStatus("SCHEDULED")
                 .build();
-      ResponseEntity<UpdateBookingResponseDto>result= this.restTemplate.postForEntity("http://localhost:8000/api/v1/booking/"+rideResponseDto.bookingId,requestDto,UpdateBookingResponseDto.class);
-        System.out.println(result.getStatusCode());
+        try {
+            bookingServiceApi.updateBooking(requestDto,rideResponseDto.bookingId).execute();
+        }catch (Exception e){
+            System.out.println("Failed to update Booking"+ e.getMessage());
+        }
     }
 }
