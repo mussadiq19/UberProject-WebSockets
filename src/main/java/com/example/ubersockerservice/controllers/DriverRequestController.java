@@ -53,7 +53,8 @@ public class DriverRequestController {
         try {
             bookingServiceApi.updateBooking(requestDto,rideResponseDto.bookingId).execute();
         }catch (Exception e){
-            System.out.println("Failed to update Booking"+ e.getMessage());
+//            System.out.println("Failed to update Booking"+ e.getMessage());
+            e.printStackTrace();
         }
     }
 }
